@@ -28,3 +28,26 @@ def run_script(script_name, retries=RETRY_COUNT, delay=RETRY_DELAY):
                 print(f"{script_name} failed after {retries} attempts.")
                 raise e
 
+def main():
+    try:
+        # Step 1: Run fetch.py (fetch data, save to S3, and store in DynamoDB)
+        run_script("fetch.py")
+
+        print("Waiting for resources to stabilize...")
+        time.sleep(WAIT_TIME_BETWEEN_SCRIPTS)
+
+        # Step 2: Run process_one_video.py (now processing all video URLs)
+        run_script("process_one_video.py")
+
+        print("Waiting for resources to stabilize...")
+        time.sleep(WAIT_TIME_BETWEEN_SCRIPTS)
+
+        # Step 3: Run mediaconvert_process.py (if needed)
+        run_script("mediaconvert_process.py")
+
+        print("All scripts executed successfully.")
+    except Exception as e:
+        print(f"Pipeline failed: {e}")
+
+if __name__ == "__main__":
+    main()
